@@ -157,8 +157,8 @@ export const getItemETH = (
   recipient?: string
 ) =>
   getOfferOrConsiderationItem(
-    0,
-    constants.AddressZero,
+    0, // ItemType.NATIVE
+    constants.AddressZero, // ETH address
     0,
     toBN(startAmount),
     toBN(endAmount),

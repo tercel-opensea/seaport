@@ -373,6 +373,8 @@ export const seaportFixture = async (owner: Wallet) => {
       }
     }
 
+    console.log('gasUsed:', receipt.gasUsed);
+    // console.log('receipt:', receipt);
     return receipt;
   };
 

@@ -93,7 +93,7 @@ export const fixtureERC721 = async (signer: JsonRpcSigner | Wallet) => {
     token = testERC721.address
   ) =>
     getOfferOrConsiderationItem(
-      2,
+      2, //ItemType.ERC721
       token,
       identifierOrCriteria,
       startAmount,
@@ -108,7 +108,7 @@ export const fixtureERC721 = async (signer: JsonRpcSigner | Wallet) => {
     recipient?: string
   ) =>
     getOfferOrConsiderationItem(
-      4,
+      4, //ItemType.ERC721_WITH_CRITERIA
       testERC721.address,
       identifierOrCriteria,
       startAmount,
@@ -179,7 +179,7 @@ export const fixtureERC1155 = async (signer: JsonRpcSigner | Wallet) => {
     recipient?: string
   ) =>
     getOfferOrConsiderationItem(
-      5,
+      5, // ItemType.ERC1155_WITH_CRITERIA
       testERC1155.address,
       identifierOrCriteria,
       startAmount,
@@ -195,7 +195,7 @@ export const fixtureERC1155 = async (signer: JsonRpcSigner | Wallet) => {
     recipient?: string
   ) =>
     getOfferOrConsiderationItem(
-      3,
+      3, // ItemType.ERC1155
       token,
       identifierOrCriteria,
       startAmount,
