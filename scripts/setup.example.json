@@ -1,0 +1,42 @@
+[
+    {
+        "call": false,
+        "called": false,
+        "functionName": "transferOwnership",
+        "contractName": "PausableZoneController",
+        "contractAddr": "",
+        "args": [
+			"${ownerWallet.address}"
+        ]
+    },
+    {
+        "call": false,
+        "called": false,
+        "functionName": "transferOwnership",
+        "contractName": "ConduitController",
+        "contractAddr": "",
+        "args": [
+			"${Conduit.address}","${ownerWallet.address}"
+        ]
+    },
+    {
+        "call": true,
+        "called": false,
+        "functionName": "createConduit",
+        "contractName": "ConduitController",
+        "contractAddr": "",
+        "args": [
+			"${ownerWallet.address}000000000000000000000000", "${ownerWallet.address}"
+        ]
+    },
+    {
+        "call": true,
+        "called": false,
+        "functionName": "createZone",
+        "contractName": "PausableZoneController",
+        "contractAddr": "",
+        "args": [
+			"${ownerWallet.address}000000000000000000000000"
+        ]
+    }
+]

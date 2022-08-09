@@ -1,0 +1,41 @@
+{
+	"ownerWallet": {
+		"address": "",
+		"constructorArgs": [],
+		"upgradedAddress": "",
+		"deployed": true,
+		"upgraded": true,
+		"verified": true
+	},
+	"ConduitController": {
+		"address": "",
+		"constructorArgs": [],
+		"upgradeArgs": [],
+		"upgradedAddress": "",
+		"deployed": false,
+		"upgraded": false,
+		"verified": false
+	},
+	"PausableZoneController": {
+		"address": "",
+		"constructorArgs": [
+			"${ownerWallet.address}"
+		],
+		"upgradeArgs": [],
+		"upgradedAddress": "",
+		"deployed": false,
+		"upgraded": false,
+		"verified": false
+	},
+	"Seaport": {
+		"address": "",
+		"constructorArgs": [
+			"${ConduitController.address}"
+		],
+		"upgradeArgs": [],
+		"upgradedAddress": "",
+		"deployed": false,
+		"upgraded": false,
+		"verified": false
+	}
+}

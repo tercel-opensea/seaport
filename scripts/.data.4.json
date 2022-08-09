@@ -1,0 +1,41 @@
+{
+  "ownerWallet": {
+    "address": "0x2d4e68cAF597d1e980b5e8684164460161f8C29b",
+    "constructorArgs": [],
+    "upgradedAddress": "",
+    "deployed": true,
+    "upgraded": true,
+    "verified": true
+  },
+  "ConduitController": {
+    "address": "0x1D107657984D55D9b01f6b8Fb000620E0F02B632",
+    "constructorArgs": [],
+    "upgradeArgs": [],
+    "upgradedAddress": "",
+    "deployed": true,
+    "upgraded": true,
+    "verified": true
+  },
+  "PausableZoneController": {
+    "address": "0xdf1919b8cDd0b7216eA54dE78315c737EF9BD5Ea",
+    "constructorArgs": [
+      "${ownerWallet.address}"
+    ],
+    "upgradeArgs": [],
+    "upgradedAddress": "0xdf1919b8cDd0b7216eA54dE78315c737EF9BD5Ea",
+    "deployed": true,
+    "upgraded": true,
+    "verified": true
+  },
+  "Seaport": {
+    "address": "0x5A3124cBddaf73677D8fDf69F1e4608199fF1498",
+    "constructorArgs": [
+      "${ConduitController.address}"
+    ],
+    "upgradeArgs": [],
+    "upgradedAddress": "",
+    "deployed": true,
+    "upgraded": true,
+    "verified": true
+  }
+}

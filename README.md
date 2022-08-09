@@ -258,3 +258,11 @@ When making a pull request, ensure that:
 [discussions-link]: https://github.com/ProjectOpenSea/seaport/discussions
 [js-library-badge]: https://img.shields.io/badge/Seaport.js-library-red
 [js-library-link]: https://github.com/ProjectOpenSea/seaport-js
+
+## Contract addresses
+### Rinkeby
+```
+ConduitController : "0x1D107657984D55D9b01f6b8Fb000620E0F02B632",
+PausableZoneController : "0xdf1919b8cDd0b7216eA54dE78315c737EF9BD5Ea",
+Seaport : "0x5A3124cBddaf73677D8fDf69F1e4608199fF1498",
+```
