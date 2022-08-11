@@ -316,6 +316,10 @@ export const marketplaceFixture = async (
       }
     }
 
+    // test error case for match order
+    // compressedConsiderationItems[0].startAmount = ethers.BigNumber.from(1);
+    // compressedConsiderationItems[0].endAmount = ethers.BigNumber.from(1);
+
     const orderParameters = {
       offerer: offerer.address,
       zone: zone.address,
