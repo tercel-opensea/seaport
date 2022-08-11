@@ -265,4 +265,7 @@ When making a pull request, ensure that:
 ConduitController : "0x1D107657984D55D9b01f6b8Fb000620E0F02B632",
 PausableZoneController : "0xdf1919b8cDd0b7216eA54dE78315c737EF9BD5Ea",
 Seaport : "0x5A3124cBddaf73677D8fDf69F1e4608199fF1498",
+
+Conduit : "0x896b36dE012a3f37f2B0AE056C22aEeA7466DdCb",
+Zone : "0xe70ad7196d384e4be7d3d43fadfa2faf7cb04922",
 ```

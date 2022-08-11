@@ -210,6 +210,12 @@ export const marketplaceFixture = async (
           .reduce((a, b) => a.add(b), toBN(0))
       );
 
+    console.log(JSON.stringify({
+      order,
+      orderHash,
+      value,
+    }, null, 2));
+
     return {
       order,
       orderHash,
@@ -355,11 +361,14 @@ export const marketplaceFixture = async (
       )
       .reduce((a, b) => a.add(b), toBN(0));
 
-    return {
+    
+    const res = {
       mirrorOrder,
       mirrorOrderHash,
       mirrorValue,
     };
+    console.log(JSON.stringify(res, null, 2));
+    return res;
   };
 
   const createMirrorAcceptOfferOrder = async (
