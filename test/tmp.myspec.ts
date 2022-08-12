@@ -190,6 +190,8 @@ describe(`Basic buy now or accept offer flows (Seaport v${VERSION})`, function (
       );
       expect(executions.length).to.equal(4);
 
+      console.log('fulfillments', JSON.stringify(fulfillments, null, 2));
+
       const tx = marketplaceContract
         .connect(owner)
         .matchOrders([order, mirrorOrder], fulfillments, {
