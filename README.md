@@ -10,7 +10,7 @@
 
 # Seaport
 
-Seaport is a new marketplace protocol for safely and efficiently buying and selling NFTs.
+Seaport is a  marketplace protocol for safely and efficiently buying and selling NFTs.
 
 ## Table of Contents
 
@@ -75,7 +75,7 @@ To be deployed on other EVM chains, such as:
 - Fantom
 - RSK
 
-To deploy to a new EVM chain, follow the [steps outlined here](docs/Deployment.md).
+To deploy to a  EVM chain, follow the [steps outlined here](docs/Deployment.md).
 
 ## Diagram
 
@@ -224,19 +224,19 @@ OpenSea engaged Trail of Bits to audit the security of Seaport. From April 18th 
 
 ## Contributing
 
-Contributions to Seaport are welcome by anyone interested in writing more tests, improving readability, optimizing for gas efficiency, or extending the protocol via new zone contracts or other features.
+Contributions to Seaport are welcome by anyone interested in writing more tests, improving readability, optimizing for gas efficiency, or extending the protocol via  zone contracts or other features.
 
 When making a pull request, ensure that:
 
 - All tests pass.
 - Code coverage remains at 100% (coverage tests must currently be written in hardhat).
-- All new code adheres to the style guide:
+- All  code adheres to the style guide:
   - All lint checks pass.
   - Code is thoroughly commented with natspec where relevant.
 - If making a change to the contracts:
   - Gas snapshots are provided and demonstrate an improvement (or an acceptable deficit given other improvements).
   - Reference contracts are modified correspondingly if relevant.
-  - New tests (ideally via foundry) are included for all new features or code paths.
+  - New tests (ideally via foundry) are included for all  features or code paths.
 - If making a modification to third-party dependencies, `yarn audit` passes.
 - A descriptive summary of the PR has been provided.
 
@@ -268,4 +268,9 @@ Seaport : "0x5A3124cBddaf73677D8fDf69F1e4608199fF1498",
 
 Conduit : "0x896b36dE012a3f37f2B0AE056C22aEeA7466DdCb",
 Zone : "0xe70ad7196d384e4be7d3d43fadfa2faf7cb04922",
+
+TestERC721Json1 : "0x4a1a5F99cfB691f9CA0bB8bF2F3B95Be7495E5c8",
+TestERC721Json2 : "0xCEEa7aAefFea5575c500325f04f23b1Ed4687b8a",
+TestERC721Base1 : "0x3ab362275351e352D6494Ddd7a91373A5E031Ac8",
+TestERC721Base2 : "0xfD4930dED8ebDa726F10907d14665FD69A26265c",
 ```

@@ -37,5 +37,57 @@
     "deployed": true,
     "upgraded": true,
     "verified": true
+  },
+  "TestERC721Json1": {
+    "contractName": "TestERC721Json",
+    "address": "0x4a1a5F99cfB691f9CA0bB8bF2F3B95Be7495E5c8",
+    "constructorArgs": [
+      "TestERC721Json 1",
+      "TS721-1"
+    ],
+    "upgradeArgs": [],
+    "upgradedAddress": "0x4a1a5F99cfB691f9CA0bB8bF2F3B95Be7495E5c8",
+    "deployed": true,
+    "upgraded": true,
+    "verified": true
+  },
+  "TestERC721Json2": {
+    "contractName": "TestERC721Json",
+    "address": "0xCEEa7aAefFea5575c500325f04f23b1Ed4687b8a",
+    "constructorArgs": [
+      "TestERC721Json 2",
+      "TS721-2"
+    ],
+    "upgradeArgs": [],
+    "upgradedAddress": "0xCEEa7aAefFea5575c500325f04f23b1Ed4687b8a",
+    "deployed": true,
+    "upgraded": true,
+    "verified": true
+  },
+  "TestERC721Base1": {
+    "contractName": "TestERC721Base64",
+    "address": "0x3ab362275351e352D6494Ddd7a91373A5E031Ac8",
+    "constructorArgs": [
+      "TestERC721Base 1",
+      "TB721-1"
+    ],
+    "upgradeArgs": [],
+    "upgradedAddress": "0x3ab362275351e352D6494Ddd7a91373A5E031Ac8",
+    "deployed": true,
+    "upgraded": true,
+    "verified": false
+  },
+  "TestERC721Base2": {
+    "contractName": "TestERC721Base64",
+    "address": "0xfD4930dED8ebDa726F10907d14665FD69A26265c",
+    "constructorArgs": [
+      "TestERC721Base 2",
+      "TB721-2"
+    ],
+    "upgradeArgs": [],
+    "upgradedAddress": "0xfD4930dED8ebDa726F10907d14665FD69A26265c",
+    "deployed": true,
+    "upgraded": true,
+    "verified": false
   }
 }
