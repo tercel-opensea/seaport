@@ -10,16 +10,6 @@
         ]
     },
     {
-        "call": false,
-        "called": false,
-        "functionName": "transferOwnership",
-        "contractName": "ConduitController",
-        "contractAddr": "",
-        "args": [
-			"${Conduit.address}","${ownerWallet.address}"
-        ]
-    },
-    {
         "call": true,
         "called": false,
         "functionName": "createConduit",
@@ -37,6 +27,26 @@
         "contractAddr": "",
         "args": [
 			"${ownerWallet.address}000000000000000000000000"
+        ]
+    },
+    {
+        "call": false,
+        "called": false,
+        "functionName": "updateChannel",
+        "contractName": "ConduitController",
+        "contractAddr": "",
+        "args": [
+			"${Conduit.address}", "${Seaport.address}", true
+        ]
+    },
+    {
+        "call": false,
+        "called": false,
+        "functionName": "transferOwnership",
+        "contractName": "ConduitController",
+        "contractAddr": "",
+        "args": [
+			"${Conduit.address}","${ownerWallet.address}"
         ]
     }
 ]
