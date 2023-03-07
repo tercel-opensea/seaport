@@ -1,53 +1,49 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.17;
 
-import { BaseConsiderationTest } from "./BaseConsiderationTest.sol";
 import { stdStorage, StdStorage } from "forge-std/Test.sol";
-import { ProxyRegistry } from "../interfaces/ProxyRegistry.sol";
-import { OwnableDelegateProxy } from "../interfaces/OwnableDelegateProxy.sol";
-import { OneWord } from "../../../contracts/lib/ConsiderationConstants.sol";
+
 import {
     ConsiderationInterface
 } from "../../../contracts/interfaces/ConsiderationInterface.sol";
+
+import { OrderType } from "../../../contracts/lib/ConsiderationEnums.sol";
+
 import {
-    BasicOrderType,
-    OrderType
-} from "../../../contracts/lib/ConsiderationEnums.sol";
+    BasicOrder_additionalRecipients_data_cdPtr,
+    TwoWords
+} from "../../../contracts/lib/ConsiderationConstants.sol";
+
 import {
-    BasicOrderParameters,
-    ConsiderationItem,
     AdditionalRecipient,
-    OfferItem,
     Fulfillment,
     FulfillmentComponent,
-    ItemType,
     Order,
     OrderComponents,
     OrderParameters
 } from "../../../contracts/lib/ConsiderationStructs.sol";
+
 import { ArithmeticUtil } from "./ArithmeticUtil.sol";
-import { OfferConsiderationItemAdder } from "./OfferConsiderationItemAdder.sol";
+
+import { OrderBuilder } from "./OrderBuilder.sol";
+
 import { AmountDeriver } from "../../../contracts/lib/AmountDeriver.sol";
 
 /// @dev base test class for cases that depend on pre-deployed token contracts
-contract BaseOrderTest is OfferConsiderationItemAdder, AmountDeriver {
+contract BaseOrderTest is OrderBuilder, AmountDeriver {
     using stdStorage for StdStorage;
     using ArithmeticUtil for uint256;
     using ArithmeticUtil for uint128;
     using ArithmeticUtil for uint120;
 
-    uint256 internal globalSalt;
+    /**
+     * @dev used to store address and key outputs from makeAddrAndKey(name)
+     */
+    struct Account {
+        address addr;
+        uint256 key;
+    }
 
-    OrderParameters baseOrderParameters;
-    OrderComponents baseOrderComponents;
-
-    FulfillmentComponent[] offerComponents;
-    FulfillmentComponent[] considerationComponents;
-
-    FulfillmentComponent[][] offerComponentsArray;
-    FulfillmentComponent[][] considerationComponentsArray;
-
-    Fulfillment[] fulfillments;
     FulfillmentComponent firstOrderFirstItem;
     FulfillmentComponent firstOrderSecondItem;
     FulfillmentComponent secondOrderFirstItem;
@@ -60,11 +56,11 @@ contract BaseOrderTest is OfferConsiderationItemAdder, AmountDeriver {
     Fulfillment secondFulfillment;
     Fulfillment thirdFulfillment;
     Fulfillment fourthFulfillment;
-    FulfillmentComponent fulfillmentComponent;
-    FulfillmentComponent[] fulfillmentComponents;
-    Fulfillment fulfillment;
 
     AdditionalRecipient[] additionalRecipients;
+
+    Account offerer1;
+    Account offerer2;
 
     event Transfer(address indexed from, address indexed to, uint256 value);
 
@@ -80,13 +76,33 @@ contract BaseOrderTest is OfferConsiderationItemAdder, AmountDeriver {
         {
             bool success;
             assembly {
-                // Transfer the ETH and store if it succeeded or not.
+                // Transfer the native token and store if it succeeded or not.
                 success := call(gas(), _addr, 1, 0, 0, 0, 0)
             }
             vm.assume(success);
             vm.deal(address(this), uint128(MAX_INT));
         }
         _;
+    }
+
+    /**
+     * @dev convenience wrapper for makeAddrAndKey
+     */
+    function makeAccount(string memory name) internal returns (Account memory) {
+        (address addr, uint256 key) = makeAddrAndKey(name);
+        return Account(addr, key);
+    }
+
+    /**
+     * @dev convenience wrapper for makeAddrAndKey that also allocates tokens,
+     *      ether, and approvals
+     */
+    function makeAndAllocateAccount(
+        string memory name
+    ) internal returns (Account memory) {
+        Account memory account = makeAccount(name);
+        allocateTokensAndApprovals(account.addr, uint128(MAX_INT));
+        return account;
     }
 
     function setUp() public virtual override {
@@ -107,6 +123,11 @@ contract BaseOrderTest is OfferConsiderationItemAdder, AmountDeriver {
         allocateTokensAndApprovals(alice, uint128(MAX_INT));
         allocateTokensAndApprovals(bob, uint128(MAX_INT));
         allocateTokensAndApprovals(cal, uint128(MAX_INT));
+        allocateTokensAndApprovals(offerer1.addr, uint128(MAX_INT));
+        allocateTokensAndApprovals(offerer2.addr, uint128(MAX_INT));
+
+        offerer1 = makeAndAllocateAccount("offerer1");
+        offerer2 = makeAndAllocateAccount("offerer2");
     }
 
     function resetOfferComponents() internal {
@@ -123,10 +144,20 @@ contract BaseOrderTest is OfferConsiderationItemAdder, AmountDeriver {
     ) internal returns (bool) {
         Order[] memory orders = new Order[](1);
         orders[0] = order;
+        return _validateOrders(orders, _consideration);
+    }
+
+    function _validateOrders(
+        Order[] memory orders,
+        ConsiderationInterface _consideration
+    ) internal returns (bool) {
         return _consideration.validate(orders);
     }
 
-    function _prepareOrder(uint256 tokenId, uint256 totalConsiderationItems)
+    function _prepareOrder(
+        uint256 tokenId,
+        uint256 totalConsiderationItems
+    )
         internal
         returns (
             Order memory order,
@@ -171,6 +202,19 @@ contract BaseOrderTest is OfferConsiderationItemAdder, AmountDeriver {
         assembly {
             let length := mload(lengthPtr)
             mstore(lengthPtr, sub(length, amtToSubtractFromLength))
+        }
+    }
+
+    function _dirtyFirstAdditionalRecipient(
+        bytes memory orderCalldata
+    ) internal pure {
+        assembly {
+            let firstAdditionalRecipientOffset := add(
+                orderCalldata,
+                add(TwoWords, BasicOrder_additionalRecipients_data_cdPtr)
+            )
+            // Dirty the top byte of the first additional recipient address.
+            mstore8(firstAdditionalRecipientOffset, 1)
         }
     }
 
@@ -241,8 +285,8 @@ contract BaseOrderTest is OfferConsiderationItemAdder, AmountDeriver {
         if (overwriteItemsLength) {
             // Get the array length from the calldata and
             // store the length - amtToSubtractFromItemsLength in the calldata
-            // so that the length value does _not_ accurately represent the actual
-            // total array length.
+            // so that the length value does _not_ accurately represent the
+            // actual total array length.
             _subtractAmountFromLengthInOrderCalldata(
                 fulfillOrderCalldata,
                 relativeOrderParametersOffset,
@@ -271,9 +315,9 @@ contract BaseOrderTest is OfferConsiderationItemAdder, AmountDeriver {
             fulfillOrderCalldata
         );
 
-        // If overwriteItemsLength is True, the call should
-        // have failed (success should be False) and if overwriteItemsLength is False,
-        // the call should have succeeded (success should be True).
+        // If overwriteItemsLength is true, the call should
+        // have failed (success should be False) and if overwriteItemsLength is
+        // false, the call should have succeeded (success should be true).
         assertEq(success, !overwriteItemsLength);
     }
 
@@ -282,67 +326,6 @@ contract BaseOrderTest is OfferConsiderationItemAdder, AmountDeriver {
         bytes memory orderCalldata
     ) internal returns (bool success) {
         (success, ) = considerationAddress.call(orderCalldata);
-    }
-
-    function configureOrderParameters(address offerer) internal {
-        _configureOrderParameters(
-            offerer,
-            address(0),
-            bytes32(0),
-            globalSalt++,
-            false
-        );
-    }
-
-    function _configureOrderParameters(
-        address offerer,
-        address zone,
-        bytes32 zoneHash,
-        uint256 salt,
-        bool useConduit
-    ) internal {
-        bytes32 conduitKey = useConduit ? conduitKeyOne : bytes32(0);
-        baseOrderParameters.offerer = offerer;
-        baseOrderParameters.zone = zone;
-        baseOrderParameters.offer = offerItems;
-        baseOrderParameters.consideration = considerationItems;
-        baseOrderParameters.orderType = OrderType.FULL_OPEN;
-        baseOrderParameters.startTime = block.timestamp;
-        baseOrderParameters.endTime = block.timestamp + 1;
-        baseOrderParameters.zoneHash = zoneHash;
-        baseOrderParameters.salt = salt;
-        baseOrderParameters.conduitKey = conduitKey;
-        baseOrderParameters.totalOriginalConsiderationItems = considerationItems
-            .length;
-    }
-
-    function _configureOrderParametersSetEndTime(
-        address offerer,
-        address zone,
-        uint256 endTime,
-        bytes32 zoneHash,
-        uint256 salt,
-        bool useConduit
-    ) internal {
-        _configureOrderParameters(offerer, zone, zoneHash, salt, useConduit);
-        baseOrderParameters.endTime = endTime;
-    }
-
-    /**
-    @dev configures order components based on order parameters in storage and counter param
-     */
-    function _configureOrderComponents(uint256 counter) internal {
-        baseOrderComponents.offerer = baseOrderParameters.offerer;
-        baseOrderComponents.zone = baseOrderParameters.zone;
-        baseOrderComponents.offer = baseOrderParameters.offer;
-        baseOrderComponents.consideration = baseOrderParameters.consideration;
-        baseOrderComponents.orderType = baseOrderParameters.orderType;
-        baseOrderComponents.startTime = baseOrderParameters.startTime;
-        baseOrderComponents.endTime = baseOrderParameters.endTime;
-        baseOrderComponents.zoneHash = baseOrderParameters.zoneHash;
-        baseOrderComponents.salt = baseOrderParameters.salt;
-        baseOrderComponents.conduitKey = baseOrderParameters.conduitKey;
-        baseOrderComponents.counter = counter;
     }
 
     function getMaxConsiderationValue() internal view returns (uint256) {
@@ -358,7 +341,8 @@ contract BaseOrderTest is OfferConsiderationItemAdder, AmountDeriver {
     }
 
     /**
-     * @dev return OrderComponents for a given OrderParameters and offerer counter
+     * @dev return OrderComponents for a given OrderParameters and offerer
+     *      counter
      */
     function getOrderComponents(
         OrderParameters memory parameters,
@@ -380,31 +364,30 @@ contract BaseOrderTest is OfferConsiderationItemAdder, AmountDeriver {
             );
     }
 
-    function getOrderParameters(address payable offerer, OrderType orderType)
-        internal
-        returns (OrderParameters memory)
-    {
+    function getOrderParameters(
+        address offerer,
+        OrderType orderType
+    ) internal returns (OrderParameters memory) {
         return
-            OrderParameters(
-                offerer,
-                address(0),
-                offerItems,
-                considerationItems,
-                orderType,
-                block.timestamp,
-                block.timestamp + 1,
-                bytes32(0),
-                globalSalt++,
-                bytes32(0),
-                considerationItems.length
-            );
+            OrderParameters({
+                offerer: offerer,
+                zone: address(0),
+                offer: offerItems,
+                consideration: considerationItems,
+                orderType: orderType,
+                startTime: block.timestamp,
+                endTime: block.timestamp + 1,
+                zoneHash: bytes32(0),
+                salt: globalSalt++,
+                conduitKey: bytes32(0),
+                totalOriginalConsiderationItems: considerationItems.length
+            });
     }
 
-    function toOrderComponents(OrderParameters memory _params, uint256 nonce)
-        internal
-        pure
-        returns (OrderComponents memory)
-    {
+    function toOrderComponents(
+        OrderParameters memory _params,
+        uint256 nonce
+    ) internal pure returns (OrderComponents memory) {
         return
             OrderComponents(
                 _params.offerer,
@@ -421,67 +404,14 @@ contract BaseOrderTest is OfferConsiderationItemAdder, AmountDeriver {
             );
     }
 
-    function toBasicOrderParameters(
-        Order memory _order,
-        BasicOrderType basicOrderType
-    ) internal pure returns (BasicOrderParameters memory) {
-        return
-            BasicOrderParameters(
-                _order.parameters.consideration[0].token,
-                _order.parameters.consideration[0].identifierOrCriteria,
-                _order.parameters.consideration[0].endAmount,
-                payable(_order.parameters.offerer),
-                _order.parameters.zone,
-                _order.parameters.offer[0].token,
-                _order.parameters.offer[0].identifierOrCriteria,
-                _order.parameters.offer[0].endAmount,
-                basicOrderType,
-                _order.parameters.startTime,
-                _order.parameters.endTime,
-                _order.parameters.zoneHash,
-                _order.parameters.salt,
-                _order.parameters.conduitKey,
-                _order.parameters.conduitKey,
-                0,
-                new AdditionalRecipient[](0),
-                _order.signature
-            );
-    }
-
-    function toBasicOrderParameters(
-        OrderComponents memory _order,
-        BasicOrderType basicOrderType,
-        bytes memory signature
-    ) internal pure returns (BasicOrderParameters memory) {
-        return
-            BasicOrderParameters(
-                _order.consideration[0].token,
-                _order.consideration[0].identifierOrCriteria,
-                _order.consideration[0].endAmount,
-                payable(_order.offerer),
-                _order.zone,
-                _order.offer[0].token,
-                _order.offer[0].identifierOrCriteria,
-                _order.offer[0].endAmount,
-                basicOrderType,
-                _order.startTime,
-                _order.endTime,
-                _order.zoneHash,
-                _order.salt,
-                _order.conduitKey,
-                _order.conduitKey,
-                0,
-                new AdditionalRecipient[](0),
-                signature
-            );
-    }
-
-    ///@dev allow signing for this contract since it needs to be recipient of basic order to reenter on receive
-    function isValidSignature(bytes32, bytes memory)
-        external
-        pure
-        returns (bytes4)
-    {
+    /**
+     * @dev allow signing for this contract since it needs to be recipient of
+     *       basic order to reenter on receive
+     */
+    function isValidSignature(
+        bytes32,
+        bytes memory
+    ) external pure virtual returns (bytes4) {
         return 0x1626ba7e;
     }
 

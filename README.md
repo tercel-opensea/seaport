@@ -7,6 +7,7 @@
 [![Docs][docs-badge]][docs-link]
 [![Discussions][discussions-badge]][discussions-link]
 [![JS Library][js-library-badge]][js-library-link]
+[![Discord][discord-badge]][discord-link]
 
 # Seaport
 
@@ -22,6 +23,7 @@ Seaport is a  marketplace protocol for safely and efficiently buying and selling
   - [Install](#install)
   - [Usage](#usage)
     - [Foundry Tests](#foundry-tests)
+    - [Linting](#linting)
   - [Audits](#audits)
   - [Contributing](#contributing)
   - [License](#license)
@@ -34,42 +36,272 @@ See the [documentation](docs/SeaportDocumentation.md), the [interface](contracts
 
 ## Deployments
 
+### Canonical Cross-chain Deployment Addresses
+
+<table>
+<tr>
+<th>Contract</th>
+<th>Canonical Cross-chain Deployment Address</th>
+</tr>
+<tr>
+<td>Seaport 1.1</td>
+<td><code>0x00000000006c3852cbEf3e08E8dF289169EdE581</code></td>
+</tr>
+<tr>
+<td>Seaport 1.2</td>
+<td><code>0x00000000000006c7676171937C444f6BDe3D6282</code></td>
+</tr>
+<tr>
+<td>Seaport 1.3</td>
+<td><code>0x0000000000000aD24e80fd803C6ac37206a45f15</code></td>
+</tr>
+<tr>
+<td>Seaport 1.4</td>
+<td><code>0x00000000000001ad428e4906aE43D8F9852d0dD6</code></td>
+</tr>
+<tr>
+<td>ConduitController</td>
+<td><code>0x00000000F9490004C11Cef243f5400493c00Ad63</code></td>
+</tr>
+</table>
+
+> Note: Seaport 1.2 and Seaport 1.3 both contain known limitations; proceed with caution if interacting with them, particularly when utilizing restricted or contract orders.
+
+### Deployments By EVM Chain
+
 <table>
 <tr>
 <th>Network</th>
 <th>Seaport 1.1</th>
+<th>Seaport 1.4</th>
 <th>ConduitController</th>
 </tr>
 
-<tr><td>Ethereum</td><td rowspan="14">
+<tr><td>Ethereum</td><td>
 
 [0x00000000006c3852cbEf3e08E8dF289169EdE581](https://etherscan.io/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
 
-</td><td rowspan="14">
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://etherscan.io/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
 
 [0x00000000F9490004C11Cef243f5400493c00Ad63](https://etherscan.io/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
 
 </td></tr>
+<tr><td>Goerli</td><td>
 
-<tr><td>Rinkeby</td></tr>
-<tr><td>Goerli</td></tr>
-<tr><td>Kovan</td></tr>
-<tr><td>Polygon</td></tr>
-<tr><td>Mumbai</td></tr>
-<tr><td>Optimism</td></tr>
-<tr><td>Optimistic Kovan</td></tr>
-<tr><td>Arbitrum</td></tr>
-<tr><td>Arbitrum Rinkeby</td></tr>
-<tr><td>Avalanche Fuji</td></tr>
-<tr><td>Avalanche C-Chain</td></tr>
-<tr><td>Gnosis Chain</td></tr>
-<tr><td>BSC</td></tr>
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://goerli.etherscan.io/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://goerli.etherscan.io/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://goerli.etherscan.io/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Sepolia</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://sepolia.etherscan.io/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://sepolia.etherscan.io/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://sepolia.etherscan.io/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Polygon</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://polygonscan.com/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://polygonscan.com/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://polygonscan.com/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Mumbai</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://mumbai.polygonscan.com/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://mumbai.polygonscan.com/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://mumbai.polygonscan.com/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Klaytn</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://scope.klaytn.com/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://scope.klaytn.com/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://scope.klaytn.com/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Baobab</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://baobab.scope.klaytn.com/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://baobab.scope.klaytn.com/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://baobab.scope.klaytn.com/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Optimism</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://optimistic.etherscan.io/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://optimistic.etherscan.io/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://optimistic.etherscan.io/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Optimistic Goerli</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://goerli-optimism.etherscan.io/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://goerli-optimism.etherscan.io/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://goerli-optimism.etherscan.io/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Arbitrum</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://arbiscan.io/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://arbiscan.io/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://arbiscan.io/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Arbitrum Goerli</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://goerli.arbiscan.io/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://goerli.arbiscan.io/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://goerli.arbiscan.io/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Arbitrum Nova</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://nova.arbiscan.io/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://nova.arbiscan.io/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://nova.arbiscan.io/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Avalanche C-Chain</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://snowtrace.io/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://snowtrace.io/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://snowtrace.io/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Avalanche Fuji</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://testnet.snowtrace.io/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://testnet.snowtrace.io/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://testnet.snowtrace.io/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>Gnosis Chain</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://gnosisscan.io/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://gnosisscan.io/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://gnossiscan.io/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>BSC</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://bscscan.com/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://bscscan.com/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://bscscan.com/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
+<tr><td>BSC Testnet</td><td>
+
+[0x00000000006c3852cbEf3e08E8dF289169EdE581](https://testnet.bscscan.com/address/0x00000000006c3852cbEf3e08E8dF289169EdE581#code)
+
+</td><td>
+
+[0x00000000000001ad428e4906aE43D8F9852d0dD6](https://testnet.bscscan.com/address/0x00000000000001ad428e4906aE43D8F9852d0dD6#code)
+
+</td><td>
+
+[0x00000000F9490004C11Cef243f5400493c00Ad63](https://testnet.bscscan.com/address/0x00000000F9490004C11Cef243f5400493c00Ad63#code)
+
+</td></tr>
 </table>
 
 To be deployed on other EVM chains, such as:
 
-- Klaytn
-- Baobab
 - Skale
 - Celo
 - Fantom
@@ -118,7 +350,7 @@ For a more thorough flowchart see [Seaport diagram](./diagrams/Seaport.drawio.sv
 To install dependencies and compile contracts:
 
 ```bash
-git clone https://github.com/ProjectOpenSea/seaport && cd seaport
+git clone --recurse-submodules https://github.com/ProjectOpenSea/seaport && cd seaport
 yarn install
 yarn build
 ```
@@ -141,6 +373,12 @@ yarn test:ref
 yarn coverage:ref
 ```
 
+To open the generated Hardhat coverage report locally after running `yarn coverage` or `yarn coverage:ref`:
+
+```bash
+open coverage/index.html
+```
+
 To profile gas usage:
 
 ```bash
@@ -151,59 +389,36 @@ yarn profile
 
 Seaport also includes a suite of fuzzing tests written in solidity with Foundry.
 
-To install Foundry (assuming a Linux or macOS system):
+To run tests with full traces and debugging with source, create an `.env` file with the following line:
 
 ```bash
-curl -L https://foundry.paradigm.xyz | bash
+FOUNDRY_PROFILE=debug
 ```
 
-This will download foundryup. To start Foundry, run:
+You may then run tests with `forge test`, optionally specifying a level of verbosity (anywhere from one to five `v`'s, eg, `-vvv`)
 
-```bash
-foundryup
-```
+This will compile tests and contracts without `via-ir` enabled, which is must faster, but will not exactly match the deployed bytecode.
 
-To install dependencies:
-
-```
-forge install
-```
-
-To precompile contracts:
-
-The optimized contracts are compiled using the IR pipeline, which can take a long time to compile. By default, the differential test suite deploys precompiled versions of both the optimized and reference contracts. Precompilation can be done by specifying specific Foundry profiles.
+To run tests against the actual bytecode intended to be deployed on networks, you will need to pre-compile the contracts, and remove the `FOUNDRY_PROFILE` variable from your `.env` file. **Note** that informative error traces may not be available, and the Forge debugger will not show the accompanying source code.
 
 ```bash
 FOUNDRY_PROFILE=optimized forge build
 FOUNDRY_PROFILE=reference forge build
 ```
 
-There are three Foundry profiles for running the test suites, which bypass the IR pipeline to speed up compilation. To run tests, run any of the following:
+To run Forge coverage tests and open the generated coverage report locally:
 
 ```bash
-FOUNDRY_PROFILE=test forge test # with 5000 fuzz runs
-FOUNDRY_PROFILE=lite forge test # with 1000 fuzz runs
-FOUNDRY_PROFILE=local-ffi forge test # compiles and deploys ReferenceConsideration normally, with 1000 fuzz runs
+brew install lcov
+SEAPORT_COVERAGE=true forge coverage --report summary --report lcov && genhtml lcov.info -o html --branch
+open html/index.html
 ```
 
-You may wish to include a `.env` file that `export`s a specific profile when developing locally.
+**Note** that Forge does not yet ignore specific filepaths when running coverage tests.
 
-**Note** that stack+debug traces will not be available for precompiled contracts. To facilitate local development, specifying `FOUNDRY_PROFILE=local-ffi` will compile and deploy the reference implementation normally, allowing for stack+debug traces.
+For information on Foundry, including installation and testing, see the [Foundry Book](https://book.getfoundry.sh/).
 
-**Note** the `local-ffi` profile uses Forge's `ffi` flag. `ffi` can potentially be unsafe, as it allows Forge to execute arbitrary code. Use with caution, and always ensure you trust the code in this repository, especially when working on third-party forks.
-
-The following modifiers are also available:
-
-- Level 2 (-vv): Logs emitted during tests are also displayed.
-- Level 3 (-vvv): Stack traces for failing tests are also displayed.
-- Level 4 (-vvvv): Stack traces for all tests are displayed, and setup traces for failing tests are displayed.
-- Level 5 (-vvvvv): Stack traces and setup traces are always displayed.
-
-```bash
-FOUNDRY_PROFILE=test forge test  -vv
-```
-
-For more information on foundry testing and use, see [Foundry Book installation instructions](https://book.getfoundry.sh/getting-started/installation.html).
+### Linting
 
 To run lint checks:
 
@@ -242,7 +457,7 @@ When making a pull request, ensure that:
 
 ## License
 
-[MIT](LICENSE) Copyright 2022 Ozone Networks, Inc.
+[MIT](LICENSE) Copyright 2023 Ozone Networks, Inc.
 
 [version-badge]: https://img.shields.io/github/package-json/v/ProjectOpenSea/seaport
 [version-link]: https://github.com/ProjectOpenSea/seaport/releases
@@ -258,6 +473,7 @@ When making a pull request, ensure that:
 [discussions-link]: https://github.com/ProjectOpenSea/seaport/discussions
 [js-library-badge]: https://img.shields.io/badge/Seaport.js-library-red
 [js-library-link]: https://github.com/ProjectOpenSea/seaport-js
+<<<<<<< HEAD
 
 ## Contract addresses
 ### Rinkeby
@@ -274,3 +490,7 @@ TestERC721Json2 : "0xCEEa7aAefFea5575c500325f04f23b1Ed4687b8a",
 TestERC721Base1 : "0x3ab362275351e352D6494Ddd7a91373A5E031Ac8",
 TestERC721Base2 : "0xfD4930dED8ebDa726F10907d14665FD69A26265c",
 ```
+=======
+[discord-badge]: https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue
+[discord-link]: https://discord.gg/ADXcTXpqry
+>>>>>>> a27eff9fa299a14c432666c8dc963aa072437dde

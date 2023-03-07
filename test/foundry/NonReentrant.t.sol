@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.17;
 
 import {
     OrderType,
@@ -7,9 +7,11 @@ import {
     ItemType,
     Side
 } from "../../contracts/lib/ConsiderationEnums.sol";
+
 import {
     ConsiderationInterface
 } from "../../contracts/interfaces/ConsiderationInterface.sol";
+
 import {
     AdditionalRecipient,
     Fulfillment,
@@ -17,19 +19,20 @@ import {
     ConsiderationItem,
     FulfillmentComponent,
     OrderComponents,
+    OrderParameters,
     AdvancedOrder,
     BasicOrderParameters,
     Order
 } from "../../contracts/lib/ConsiderationStructs.sol";
+
 import { BaseOrderTest } from "./utils/BaseOrderTest.sol";
+
 import {
     EntryPoint,
     ReentryPoint
 } from "./utils/reentrancy/ReentrantEnums.sol";
-import {
-    OrderParameters,
-    CriteriaResolver
-} from "./utils/reentrancy/ReentrantStructs.sol";
+
+import { CriteriaResolver } from "./utils/reentrancy/ReentrantStructs.sol";
 
 contract NonReentrantTest is BaseOrderTest {
     BasicOrderParameters basicOrderParameters;
@@ -67,26 +70,27 @@ contract NonReentrantTest is BaseOrderTest {
 
     event BytesReason(bytes data);
 
-    function test(function(Context memory) external fn, Context memory context)
-        internal
-    {
+    function test(
+        function(Context memory) external fn,
+        Context memory context
+    ) internal {
         try fn(context) {} catch (bytes memory reason) {
             assertPass(reason);
         }
     }
 
     function testNonReentrant() public {
-        for (uint256 i; i < 7; ++i) {
-            for (uint256 j; j < 10; ++j) {
+        for (uint256 i; i < 8; ++i) {
+            for (uint256 j; j < 11; ++j) {
                 NonReentrantInputs memory inputs = NonReentrantInputs(
                     EntryPoint(i),
                     ReentryPoint(j)
                 );
+                test(this.nonReentrant, Context(consideration, inputs));
                 test(
                     this.nonReentrant,
                     Context(referenceConsideration, inputs)
                 );
-                test(this.nonReentrant, Context(consideration, inputs));
             }
         }
     }
@@ -121,6 +125,24 @@ contract NonReentrantTest is BaseOrderTest {
                 emit BytesReason(abi.encodeWithSignature("NoReentrantCalls()"));
             }
             currentConsideration.fulfillBasicOrder(_basicOrderParameters);
+            shouldReenter = false;
+        } else if (entryPoint == EntryPoint.FulfillBasicOrderEfficient) {
+            BasicOrderParameters
+                memory _basicOrderParameters = prepareBasicOrder(tokenId);
+            if (!reentering) {
+                shouldReenter = true;
+                vm.expectEmit(
+                    true,
+                    false,
+                    false,
+                    false,
+                    address(address(this))
+                );
+                emit BytesReason(abi.encodeWithSignature("NoReentrantCalls()"));
+            }
+            currentConsideration.fulfillBasicOrder_efficient_6GL6yc(
+                _basicOrderParameters
+            );
             shouldReenter = false;
         } else if (entryPoint == EntryPoint.FulfillOrder) {
             (
@@ -222,7 +244,8 @@ contract NonReentrantTest is BaseOrderTest {
             currentConsideration.matchAdvancedOrders{ value: 1 }(
                 _orders,
                 criteriaResolvers,
-                _fulfillments
+                _fulfillments,
+                address(0)
             );
         }
     }
@@ -243,10 +266,9 @@ contract NonReentrantTest is BaseOrderTest {
         }
     }
 
-    function prepareBasicOrder(uint256 tokenId)
-        internal
-        returns (BasicOrderParameters memory _basicOrderParameters)
-    {
+    function prepareBasicOrder(
+        uint256 tokenId
+    ) internal returns (BasicOrderParameters memory _basicOrderParameters) {
         test1155_1.mint(address(this), tokenId, 2);
 
         offerItems.push(
@@ -298,7 +320,9 @@ contract NonReentrantTest is BaseOrderTest {
             );
     }
 
-    function prepareOrder(uint256 tokenId)
+    function prepareOrder(
+        uint256 tokenId
+    )
         internal
         returns (
             Order memory _order,
@@ -335,7 +359,9 @@ contract NonReentrantTest is BaseOrderTest {
         fulfillerConduitKey = bytes32(0);
     }
 
-    function prepareAdvancedOrder(uint256 tokenId)
+    function prepareAdvancedOrder(
+        uint256 tokenId
+    )
         internal
         returns (
             AdvancedOrder memory _order,
@@ -374,7 +400,9 @@ contract NonReentrantTest is BaseOrderTest {
         fulfillerConduitKey = bytes32(0);
     }
 
-    function prepareAvailableOrders(uint256 tokenId)
+    function prepareAvailableOrders(
+        uint256 tokenId
+    )
         internal
         returns (
             Order[] memory _orders,
@@ -416,7 +444,9 @@ contract NonReentrantTest is BaseOrderTest {
         _orders[0] = Order(_orderParameters, signature);
     }
 
-    function prepareFulfillAvailableAdvancedOrders(uint256 tokenId)
+    function prepareFulfillAvailableAdvancedOrders(
+        uint256 tokenId
+    )
         internal
         returns (
             AdvancedOrder[] memory advancedOrders,
@@ -446,10 +476,9 @@ contract NonReentrantTest is BaseOrderTest {
         );
     }
 
-    function prepareMatchOrders(uint256 tokenId)
-        internal
-        returns (Order[] memory, Fulfillment[] memory)
-    {
+    function prepareMatchOrders(
+        uint256 tokenId
+    ) internal returns (Order[] memory, Fulfillment[] memory) {
         test721_1.mint(address(this), tokenId);
         addErc721OfferItem(tokenId);
         addEthConsiderationItem(payable(address(this)), 1);
@@ -550,15 +579,15 @@ contract NonReentrantTest is BaseOrderTest {
         return (orders, fulfillments);
     }
 
-    function _convertOrderToAdvanced(Order memory _order)
-        internal
-        pure
-        returns (AdvancedOrder memory)
-    {
+    function _convertOrderToAdvanced(
+        Order memory _order
+    ) internal pure returns (AdvancedOrder memory) {
         return AdvancedOrder(_order.parameters, 1, 1, _order.signature, "");
     }
 
-    function prepareMatchAdvancedOrders(uint256 tokenId)
+    function prepareMatchAdvancedOrders(
+        uint256 tokenId
+    )
         internal
         returns (
             AdvancedOrder[] memory _orders,
@@ -576,7 +605,7 @@ contract NonReentrantTest is BaseOrderTest {
     }
 
     function _doReenter() internal {
-        if (uint256(reentryPoint) < 7) {
+        if (uint256(reentryPoint) < uint256(ReentryPoint.Cancel)) {
             try
                 this._entryPoint(EntryPoint(uint256(reentryPoint)), 10, true)
             {} catch (bytes memory reason) {

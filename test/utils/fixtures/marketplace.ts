@@ -4,6 +4,7 @@ import { keccak256, recoverAddress } from "ethers/lib/utils";
 import hre, { ethers } from "hardhat";
 
 import { deployContract } from "../contracts";
+import { getBulkOrderTree } from "../eip712/bulk-orders";
 import {
   calculateOrderHash,
   convertSignatureToEIP2098,
@@ -17,6 +18,9 @@ import type {
   ConduitInterface,
   ConsiderationInterface,
   ImmutableCreate2FactoryInterface,
+  TestInvalidContractOfferer,
+  TestInvalidContractOffererRatifyOrder,
+  TestPostExecution,
   TestZone,
 } from "../../../typechain-types";
 import type {
@@ -29,6 +33,7 @@ import type {
 import type { Contract, Wallet } from "ethers";
 
 const deployConstants = require("../../../constants/constants");
+// const { bulkOrderType } = require("../../../eip-712-types/bulkOrder");
 const { orderType } = require("../../../eip-712-types/order");
 
 export const marketplaceFixture = async (
@@ -82,6 +87,24 @@ export const marketplaceFixture = async (
     .updateChannel(conduitOne.address, marketplaceContract.address, true);
 
   const stubZone = await deployContract<TestZone>("TestZone", owner);
+  const postExecutionZone = await deployContract<TestPostExecution>(
+    "TestPostExecution",
+    owner
+  );
+
+  const invalidContractOfferer =
+    await deployContract<TestInvalidContractOfferer>(
+      "TestInvalidContractOfferer",
+      owner,
+      marketplaceContractAddress
+    );
+
+  const invalidContractOffererRatifyOrder =
+    await deployContract<TestInvalidContractOffererRatifyOrder>(
+      "TestInvalidContractOffererRatifyOrder",
+      owner,
+      marketplaceContractAddress
+    );
 
   // Required for EIP712 signing
   const domainData = {
@@ -101,17 +124,18 @@ export const marketplaceFixture = async (
   // Returns signature
   const signOrder = async (
     orderComponents: OrderComponents,
-    signer: Wallet | Contract
+    signer: Wallet | Contract,
+    marketplace = marketplaceContract
   ) => {
     const signature = await signer._signTypedData(
-      domainData,
+      { ...domainData, verifyingContract: marketplace.address },
       orderType,
       orderComponents
     );
 
     const orderHash = await getAndVerifyOrderHash(orderComponents);
 
-    const { domainSeparator } = await marketplaceContract.information();
+    const { domainSeparator } = await marketplace.information();
     const digest = keccak256(
       `0x1901${domainSeparator.slice(2)}${orderHash.slice(2)}`
     );
@@ -122,9 +146,65 @@ export const marketplaceFixture = async (
     return signature;
   };
 
+  const signBulkOrder = async (
+    orderComponents: OrderComponents[],
+    signer: Wallet | Contract,
+    startIndex = 0,
+    height?: number,
+    extraCheap?: boolean
+  ) => {
+    const tree = getBulkOrderTree(orderComponents, startIndex, height);
+    const bulkOrderType = tree.types;
+    const chunks = tree.getDataToSign();
+    let signature = await signer._signTypedData(domainData, bulkOrderType, {
+      tree: chunks,
+    });
+
+    if (extraCheap) {
+      signature = convertSignatureToEIP2098(signature);
+    }
+
+    const proofAndSignature = tree.getEncodedProofAndSignature(
+      startIndex,
+      signature
+    );
+
+    const orderHash = tree.getBulkOrderHash();
+
+    const { domainSeparator } = await marketplaceContract.information();
+    const digest = keccak256(
+      `0x1901${domainSeparator.slice(2)}${orderHash.slice(2)}`
+    );
+    const recoveredAddress = recoverAddress(digest, signature);
+
+    expect(recoveredAddress).to.equal(signer.address);
+
+    // Verify each individual order
+    for (const components of orderComponents) {
+      const individualOrderHash = await getAndVerifyOrderHash(components);
+      const digest = keccak256(
+        `0x1901${domainSeparator.slice(2)}${individualOrderHash.slice(2)}`
+      );
+      const individualOrderSignature = await signer._signTypedData(
+        domainData,
+        orderType,
+        components
+      );
+      const recoveredAddress = recoverAddress(digest, individualOrderSignature);
+      expect(recoveredAddress).to.equal(signer.address);
+    }
+
+    return proofAndSignature;
+  };
+
   const createOrder = async (
     offerer: Wallet | Contract,
-    zone: TestZone | Wallet | undefined | string = undefined,
+    zone:
+      | TestZone
+      | TestPostExecution
+      | Wallet
+      | undefined
+      | string = undefined,
     offer: OfferItem[],
     consideration: ConsiderationItem[],
     orderType: number,
@@ -133,9 +213,13 @@ export const marketplaceFixture = async (
     signer?: Wallet,
     zoneHash = constants.HashZero,
     conduitKey = constants.HashZero,
-    extraCheap = false
+    extraCheap = false,
+    useBulkSignature = false,
+    bulkSignatureIndex?: number,
+    bulkSignatureHeight?: number,
+    marketplace = marketplaceContract
   ) => {
-    const counter = await marketplaceContract.getCounter(offerer.address);
+    const counter = await marketplace.getCounter(offerer.address);
 
     const salt = !extraCheap ? randomHex() : constants.HashZero;
     const startTime =
@@ -167,7 +251,7 @@ export const marketplaceFixture = async (
     const orderHash = await getAndVerifyOrderHash(orderComponents);
 
     const { isValidated, isCancelled, totalFilled, totalSize } =
-      await marketplaceContract.getOrderStatus(orderHash);
+      await marketplace.getOrderStatus(orderHash);
 
     expect(isCancelled).to.equal(false);
 
@@ -178,7 +262,11 @@ export const marketplaceFixture = async (
       totalSize,
     };
 
-    const flatSig = await signOrder(orderComponents, signer ?? offerer);
+    const flatSig = await signOrder(
+      orderComponents,
+      signer ?? offerer,
+      marketplace
+    );
 
     const order = {
       parameters: orderParameters,
@@ -187,6 +275,28 @@ export const marketplaceFixture = async (
       denominator: 1, // only used for advanced orders
       extraData: "0x", // only used for advanced orders
     };
+
+    if (useBulkSignature) {
+      order.signature = await signBulkOrder(
+        [orderComponents],
+        signer ?? offerer,
+        bulkSignatureIndex,
+        bulkSignatureHeight,
+        extraCheap
+      );
+
+      // Verify bulk signature length
+      expect(
+        order.signature.slice(2).length / 2,
+        "bulk signature length should be valid (98 < length < 837)"
+      )
+        .to.be.gt(98)
+        .and.lt(837);
+      expect(
+        (order.signature.slice(2).length / 2 - 67) % 32,
+        "bulk signature length should be valid ((length - 67) % 32 < 2)"
+      ).to.be.lt(2);
+    }
 
     // How much ether (at most) needs to be supplied when fulfilling the order
     const value = offer
@@ -222,6 +332,8 @@ export const marketplaceFixture = async (
       value,
       orderStatus,
       orderComponents,
+      startTime,
+      endTime,
     };
   };
 
@@ -481,8 +593,12 @@ export const marketplaceFixture = async (
     marketplaceContract,
     directMarketplaceContract,
     stubZone,
+    postExecutionZone,
+    invalidContractOfferer,
+    invalidContractOffererRatifyOrder,
     domainData,
     signOrder,
+    signBulkOrder,
     createOrder,
     createMirrorBuyNowOrder,
     createMirrorAcceptOfferOrder,
